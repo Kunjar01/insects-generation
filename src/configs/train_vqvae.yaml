@@ -1,18 +1,19 @@
 defaults:
-  - dataset: udem-birds 
-working_dir: '/home/future/Documents/runs_articfacts/birds-generation/outputs'
+  - dataset: insect66 
+  - _self_
+working_dir: '/home/sebastien/Documents/Advanced_Deep_Learning/Project/outputs'
 hydra:
   run:
     dir: ${working_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}
 git_hash: ''
-project_name: birds-audio-generation
+project_name: insect-audio-generation
 run_name: Test run
 tags: 
   - 'debug'
 
 
 num_workers: 4
-nb_epochs: 100000
+nb_epochs: 10
 lr: 0.00002
 latent_loss_weight: 0.25
 net:

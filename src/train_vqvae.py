@@ -128,11 +128,98 @@ class VQEngine(pl.LightningModule):
  
         self.log_dict(logs)
 
+    def _generate(self, input):
+        quant_top, quant_bottom, diff, id_top, id_bottom = self.net.encode(input)
+        out = self.net.decode(quant_top, quant_bottom)
+        return out.detach().cpu(), id_top.long().detach().cpu(), id_bottom.long().detach().cpu()
+
+    def _remove_dim(self, input):
+        """ 
+        Remove extra dimension (dimension with only one vector)
+        """
+        if input.shape[0] == 1:
+            return input.squeeze(1)
+        return input
+    
+    def _convert_grid_to_img(self, grid, outfile=None):
+        ndarr = grid.permute(1,2,0).numpy()
+        if outfile:
+            from PIL import Image
+            ndarr = grid.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu').numpy()
+            im = ndarr.astype('uint8')
+            im = Image.fromarray(im)
+            im.save(outfile)
+        return ndarr
+
+    def _render_codebook(self, codebook):
+        import matplotlib.pyplot as plt
+        import io
+        fig, axs = plt.subplots()
+        axs.imshow(codebook[0], interpolation=None)
+        for i in range(len(codebook[0][0])):
+            for j in range(len(codebook[0][1])):
+                axs.text(i,j, codebook[0][j][i],ha='center',va='center')
+        return fig
 
 
-@hydra.main(config_path="configs", config_name="train_vqvae")
+    def training_epoch_end(self, outputs):
+        # epoch = self.current_epoch
+        if self.current_epoch % self.hparams['log_frequency'] != 0:
+            return 
+        if 'sample' not in self.cache:
+            return
+        sample = self.cache['sample'][0:20] #Just use the first 20 samples
+
+        out, codebook_top, codebook_bottom = self._generate(sample)
+
+        # os.makedirs('./outs', exist_ok=True)
+        # os.makedirs('./samples', exist_ok=True)
+        # torch.save(out, f'./outs/{str(self.current_epoch)}.tmp')
+        # torch.save(sample, f'./samples/{str(self.current_epoch)}.tmp')
+        input_grid = make_grid(self._remove_dim(sample.detach().cpu()), nrow=len(sample), padding=True, pad_value=1.0)
+        recon_grid = make_grid(self._remove_dim(out), nrow=len(sample), padding=True, pad_value=1.0)
+        
+
+        input_grid = self._convert_grid_to_img(input_grid) 
+        recon_grid = self._convert_grid_to_img(recon_grid)
+
+        # logs = {
+        #     'top_codebook': 100.0*len(torch.unique(codebook_top, sorted=False))/self.net.n_embed,
+        #     'bottom_codebook': 100.0*len(torch.unique(codebook_bottom, sorted=False))/self.net.n_embed,
+        #     'top_codebook_hist': wandb.Histogram(codebook_top.view(-1), num_bins=self.net.n_embed),
+        #     'bottom_codebook_hist': wandb.Histogram(codebook_bottom.view(-1), num_bins=self.net.n_embed),
+        #     'spectrograms':[
+        #         wandb.Image(input_grid, caption='Input'), 
+        #         wandb.Image(recon_grid, caption='Reconstructed'),
+        #         ]
+        # }
+        logs = {
+            'top_codebook': 100.0 * len(torch.unique(codebook_top, sorted=False)) / self.net.n_embed,
+            'bottom_codebook': 100.0 * len(torch.unique(codebook_bottom, sorted=False)) / self.net.n_embed,
+        }
+        
+        wandb.log({
+            "input_spectrogram": wandb.Image(input_grid, caption='Input'),
+            "reconstructed_spectrogram": wandb.Image(recon_grid, caption='Reconstructed'),
+        })
+        
+        for metric_name in outputs[0].keys():
+            logs.update({metric_name: torch.stack([x[metric_name] for x in outputs]).mean().item()})
+        
+        wandb.log({
+            "top_codebook_hist": wandb.Histogram(codebook_top.view(-1).cpu().numpy(), num_bins=self.net.n_embed),
+            "bottom_codebook_hist": wandb.Histogram(codebook_bottom.view(-1).cpu().numpy(), num_bins=self.net.n_embed),
+        })
+        
+        self.log_dict(logs)
+
+
+
+# @hydra.main(config_path="configs", config_name="train_vqvae")
+@hydra.main(config_path="/home/sebastien/Documents/Advanced_Deep_Learning/Project/insects-generation/src/configs", config_name="train_vqvae")
 def main(cfg: DictConfig) -> None:
-
+    # from omegaconf import OmegaConf
+    # print(OmegaConf.to_yaml(cfg))
     # _git_hash_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'git_hash.txt')
     # print(_git_hash_file)
     # with open(_git_hash_file) as reader:
@@ -151,13 +238,21 @@ def main(cfg: DictConfig) -> None:
     engine = VQEngine(Namespace(**cfg))
     if cfg.get('pretrained_weights', ''):
         engine.load_from_checkpoint(checkpoint_path=cfg['pretrained_weights'])
-    checkpoint_callback = ModelCheckpoint('./models-vqvae', monitor='loss', verbose=True)
-    trainer = pl.Trainer(
-        logger=logger,
-        gpus=cfg.get('gpus', 0),
-        max_epochs=cfg.get('nb_epochs', 3),
-        checkpoint_callback=checkpoint_callback,
+    checkpoint_callback = ModelCheckpoint(
+    dirpath='./models-vqvae',
+    monitor='loss',
+    verbose=True
     )
+
+    trainer = pl.Trainer(
+    logger=logger,
+    accelerator="gpu",  # Use "gpu" as the accelerator
+    devices="auto",
+    # devices=[0],        # Use device ID 0
+    max_epochs=cfg.get('nb_epochs', 3),
+    callbacks=[checkpoint_callback],
+    )
+    
     logger.log_hyperparams(cfg)
 
     logging.info(cfg)
@@ -166,7 +261,7 @@ def main(cfg: DictConfig) -> None:
 
     if 'train' in cfg.get('mode'):
         # Start training
-        trainer.fit(engine, train_dataloader=train_dataloader)
+        trainer.fit(engine, train_dataloaders=train_dataloader)
 
     if 'extract' in cfg.get('mode'):
         logging.info("Extract Latent Codes")
@@ -175,7 +270,21 @@ def main(cfg: DictConfig) -> None:
         map_size = 1000 * 1024*1024*1024
         env = lmdb.open('./latents.lmdb', map_size=map_size)
         extract_latent(lmdb_env=env, net=engine.net, dataloader=train_dataloader.train_dataloader())
-        
+
+
+    
 
 if __name__ == "__main__":
     main()
+
+
+
+########################debug#################################
+# global_x = None
+# @hydra.main(config_path="/home/sebastien/Documents/Advanced_Deep_Learning/Project/insects-generation/src/configs", config_name="train_vqvae")
+# def main(cfg: DictConfig):
+#     global global_x  
+#     global_x = SpectrogramsDataModule(config=cfg['dataset'])
+
+# main()
+

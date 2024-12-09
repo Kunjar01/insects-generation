@@ -206,6 +206,11 @@ class VQVAE(nn.Module):
         diff_t = diff_t.unsqueeze(0)
 
         dec_t = self.dec_t(quant_t)
+        # min_width = min(dec_t.shape[3], enc_b.shape[3])    # Truncation of dim to avoid error (produces new errors)
+        # enc_b = enc_b[:, :, :, :min_width]
+        # dec_t = dec_t[:, :, :, :min_width]
+        print(f"Shape of dec_t: {dec_t.shape}")
+        print(f"Shape of enc_b: {enc_b.shape}")
         enc_b = torch.cat([dec_t, enc_b], 1)
 
         quant_b = self.quantize_conv_b(enc_b).permute(0, 2, 3, 1)

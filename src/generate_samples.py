@@ -5,7 +5,7 @@ import random
 import pytorch_lightning as pl
 import logging
 import os
-from scipy import rand
+# from scipy import rand
 from PIL import Image
 from torch._C import device
 os.environ['HYDRA_FULL_ERROR'] = '1'
@@ -48,14 +48,16 @@ class Augmentations():
             quant_bottom,
             id_top,
             id_bottom)
-
-    def load_audio(self, audio_path, sr=16384, seconds=4):
+    
+    # def load_audio(self, audio_path, sr=16384, seconds=4):
+    def load_audio(self, audio_path, sr=16384, seconds=5):
         audio, _sr = librosa.load(audio_path)
         audio = librosa.resample(y=audio, orig_sr=_sr, target_sr=sr)
         audio = librosa.util.fix_length(data=audio, size=seconds)
         return audio
 
-    def load_sample_spectrogram(self, audio_path, window_length=16384*4, sr=16384, n_fft=1024):
+    # def load_sample_spectrogram(self, audio_path, window_length=16384*4, sr=16384, n_fft=1024):
+    def load_sample_spectrogram(self, audio_path, window_length=22050*5, sr=22050, n_fft=1024):
         audio = self.load_audio(audio_path, sr, window_length)
         features = librosa.feature.melspectrogram(y=audio, n_fft=n_fft)
         features = librosa.power_to_db(features)
@@ -111,7 +113,7 @@ class Augmentations():
 
     def interpolation(self, model, all_samples_paths, ratio=0.5, out_folder="", generation_count=10, device='cpu'):
         all_samples_paths = [x for x in all_samples_paths if 'interpolation' not in os.path.basename(x)]
-
+        print(all_samples_paths)
         for i, sample_path in tqdm.tqdm(enumerate(all_samples_paths)):
             count = 0
             tmp_all_samples_paths = deepcopy(all_samples_paths)
@@ -139,6 +141,7 @@ class Augmentations():
 
                     filename, ext = os.path.splitext(sample_path)
                     outfile = f"{filename}-{k}_interpolation{ratio:.2f}-{os.path.basename(sample_path1)}{ext}"
+                    print(reconstructed)
                     np.save(outfile, reconstructed)
                     count += 1
 

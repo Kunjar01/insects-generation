@@ -51,6 +51,7 @@ class AudioDataset():
         with open(self.data_path, 'r') as reader:
             data = reader.read().splitlines()
             print("All paths", len(data))
+            print(f"Classes name: {self.classes_name}")
             for d in data:
                 for cls in self.classes_name:
                     if cls in d:
@@ -217,6 +218,8 @@ class AudioDataset():
                 label_name = os.path.basename(file_path).split('-')[1]
             else:
                 label_name = file_path.split('/')[-2]
+            print(f"Extracted label name: {label_name}")
+            #print(f"Available classes: {self.classes_name}")
             label = self.classes_name.index(label_name)
             one_hot_label = np.zeros(len(self.classes_name))
             one_hot_label[label] = 1

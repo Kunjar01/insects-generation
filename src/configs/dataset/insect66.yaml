@@ -1,0 +1,82 @@
+num_workers: 6
+root_dir: '/home/sebastien/Documents/Advanced_Deep_Learning/Project/insects-generation/src'
+train_path: '${dataset.root_dir}/train.txt'
+val_path: '${dataset.root_dir}/validation.txt'
+test_path: '${dataset.root_dir}/test.txt'
+lmdb_path: ''
+
+batch_size: 6
+classes_name: 
+    - Omocestusviridulus
+    - Cyclochilaaustralasiae
+    - Pholidopteralittoralis
+    - Galangalabeculata
+    - Myrmeleotettixmaculatus
+    - Oecanthuspellucens
+    - Gryllusbimaculatus
+    - Yoyettarepetens
+    - Diceroproctaeugraphica
+    - Popplepsaltaaeroides
+    - Chorthippusbiguttulus
+    - Popplepsaltanotialis
+    - Gomphocerippusrufus
+    - Eupholidopteraschmidti
+    - Phaneropterafalcata
+    - Achetadomesticus
+    - Chrysochraondispar
+    - Platypleuraplumosa
+    - Pseudochorthippusparallelus
+    - Grylluscampestris
+    - Pseudochorthippusmontanus
+    - Conocephalusfuscus
+    - Chorthippusapricarius
+    - Tylopsislilifolia
+    - Leptophyespunctatissima
+    - Platycleisalbopunctata
+    - Ruspolianitidula
+    - Nemobiussylvestris
+    - Atrapsaltacorticina
+    - Stenobothruslineatus
+    - Bicoloranabicolor
+    - Chorthippusvagans
+    - Omocestuspetraeus
+    - Decticusverrucivorus
+    - Melanogryllusdesertus
+    - Gomphocerussibiricus
+    - Neotibicenpruinosus
+    - Omocestusrufipes
+    - Clinopsaltaautumna
+    - Platypleurasp10
+    - Platypleurasp13
+    - Barbitistesyersini
+    - Roeselianaroeselii
+    - Stenobothrusstigmaticus
+    - Ephippigerdiurnus
+    - Cicadaorni
+    - Tettigoniacantans
+    - Atrapsaltaencaustica
+    - Chorthippusbrunneus
+    - Psaltodaplaga
+    - Phaneropteranana
+    - Pholidopteraaptera
+    - Tettigoniaviridissima
+    - Platypleurasp12cfhirtipennis
+    - Gampsocleisglabra
+    - Stauroderusscalaris
+    - Yoyettacelis
+    - Chorthippusalbomarginatus
+    - Atrapsaltacollina
+    - Aleetacurvicosta
+    - Platypleuracfcatenata
+    - Eumodicogryllusbordigalensis
+    - Conocephalusdorsalis
+    - Chorthippusmollis
+    - Metriopterabrachyptera
+    - Pholidopteragriseoaptera
+
+resize: false
+return_tuple: true
+return_tuple_of3: true
+sr: 22500
+use_mel: true
+use_cache: false
