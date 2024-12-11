@@ -1,4 +1,4 @@
-# ECOGEN: Bird Sounds Generation using Deep Learning
+# Bird and Insect Sounds Generation using Deep Learning
 
 This repository contains a fork of the code for the paper [ECOGEN: Bird Sounds Generation using Deep Learning](https://doi.org/10.1111/2041-210X.14239). 
 The paper proposes a novel method for generating bird sounds using deep learning by leveraging VQ-VAE2 network architecture.
@@ -6,13 +6,13 @@ The proposed method is able to generate bird sounds that aims to increase the da
 In this repo, the code was adapted to do the same for insect sounds. 
 
 ## Caveat:
-This branch is used for debugging. There is still (at least) one bug with multiprocessing and num_workers has to be set to 0 in src\configs\dataset\*.yaml (where * is the name of the dataset config file) for the code to run. This makes training extremely slow.
+This branch is used for debugging. There is still (at least) one bug with multiprocessing. To circumvent it, num_workers has to be set to 0 in `src\configs\dataset\*.yaml` (where * is the name of the dataset config file) for the code to run. This makes training extremely slow.
 
 ## Dataset
 The dataset used in this project is [InsectSet66](https://zenodo.org/records/8252141) (Faiß, M. 2023)
 
 ## Model Checkpoint
-A trained model can be found in the folder trained_models.
+A trained model can be found in the folder `trained_models`.
 
 ## Requirements
 The code is "tested" on Windows 10 on Python 3.8.20 and PyTorch 1.13.1. The required packages can be installed using the following command:
@@ -55,7 +55,7 @@ To train the ECOGEN model, run the following command:
 ```
 python ./src/train_vqvae.py  dataset="xeno-canto" mode="train" lr=0.00002 nb_epochs=25000 log_frequency=1 dataset.batch_size=420 dataset.num_workers=8 run_name="ECOGEN Training on Xeno Canto"  tags=[vq-vae2,xeno-canto] +gpus=[1] debug=false
 ```
-You will need to update the content of `configs/dataset` to point your custom dataset folder.
+You will need to update the content of `configs/dataset` to point your custom dataset folder, as well as the hydra `config_path` and `config_name` in `train_vqvae.py`.
 
 
 #### Sample Generation
