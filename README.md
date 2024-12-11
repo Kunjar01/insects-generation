@@ -3,12 +3,13 @@
 This repository contains a fork of the code for the paper [ECOGEN: Bird Sounds Generation using Deep Learning](https://doi.org/10.1111/2041-210X.14239). 
 The paper proposes a novel method for generating bird sounds using deep learning by leveraging VQ-VAE2 network architecture.
 The proposed method is able to generate bird sounds that aims to increase the dataset size for bird sound classification tasks.
+In this repo, the code was adapted to do the same for insect sounds. 
 
 ## Caveat:
 This branch is used for debugging. There is still (at least) one bug with multiprocessing and num_workers has to be set to 0 in src\configs\dataset\*.yaml (where * is the name of the dataset config file) for the code to run. This makes training extremely slow.
 
 ## Dataset
-The dataset used in this test is [InsectSet66](https://zenodo.org/records/8252141) (Faiß, M. 2023)
+The dataset used in this project is [InsectSet66](https://zenodo.org/records/8252141) (Faiß, M. 2023)
 
 ## Model Checkpoint
 A trained model can be found in the folder trained_models.
@@ -19,8 +20,6 @@ The code is "tested" on Windows 10 on Python 3.8.20 and PyTorch 1.13.1. The requ
 git clone https://github.com/Kunjar01/insects-generation
 git checkout VQVAE-Adapt-win
 cd ./birds-generation/
-
-#Otherwise use this line
 pip install -r requirements.txt
 ```
 
