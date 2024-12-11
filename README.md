@@ -8,7 +8,7 @@ The proposed method is able to generate bird sounds that aims to increase the da
 This branch is used for debugging. There is still (at least) one bug with multiprocessing and num_workers has to be set to 0 in src\configs\dataset\*.yaml (where * is the name of the dataset config file) for the code to run. This makes training extremely slow.
 
 ## Dataset
-The dataset used in this paper is InsectSet66
+The dataset used in this test is [InsectSet66](https://zenodo.org/records/8252141) (Faiß, M. 2023)
 
 ## Model Checkpoint
 A trained model can be found in the folder trained_models.
@@ -19,8 +19,6 @@ The code is "tested" on Windows 10 on Python 3.8.20 and PyTorch 1.13.1. The requ
 git clone https://github.com/Kunjar01/insects-generation
 git checkout VQVAE-Adapt-win
 cd ./birds-generation/
-#Use this line for M1 series Mac
-pip install -r mac-m1-requirements.txt
 
 #Otherwise use this line
 pip install -r requirements.txt
@@ -32,6 +30,7 @@ The preprocessing steps are as follows to train the ECOGEN VQ-VAE2 model:
 2. Resample the audio files to 22050 Hz
 3. Trim the audio files to 5 seconds
 
+Preprocessing was done using the script src/data_prep.py
 
 ## Usage
 We heavily used Hydra to manage the configuration files. The configuration files can be found in the `src/configs` folder. See the [Hydra documentation](https://hydra.cc/docs/intro) for more details.
