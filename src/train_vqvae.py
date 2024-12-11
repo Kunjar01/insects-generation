@@ -31,7 +31,7 @@ class VQEngine(pl.LightningModule):
     def forward(self, *args, **kwargs):
         return self.net(*args, **kwargs)
     
-    def configure_optimizers(self,):
+    def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.net.parameters(), lr=self.hparams.lr)
         return optimizer
     
@@ -276,15 +276,3 @@ def main(cfg: DictConfig) -> None:
 
 if __name__ == "__main__":
     main()
-
-
-
-########################debug#################################
-# global_x = None
-# @hydra.main(config_path="/home/sebastien/Documents/Advanced_Deep_Learning/Project/insects-generation/src/configs", config_name="train_vqvae")
-# def main(cfg: DictConfig):
-#     global global_x  
-#     global_x = SpectrogramsDataModule(config=cfg['dataset'])
-
-# main()
-

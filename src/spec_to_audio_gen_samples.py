@@ -38,28 +38,30 @@ def audio_to_melspectrogram(audio, resize=True):
     return features
 
 
-
-
-
-
+# manual generation of a few examples to test experts with
 working_dir = '/home/sebastien/Downloads/InsectSetDownsampledSortedCut-001/test_interpolation/Achetadomesticus/'
 original_wave_path = '/home/sebastien/Downloads/InsectSetDownsampledSortedCut-001/test_interpolation/x/Grylluscampestris_GBIF2626668332_IN45297253_85264_cut_1.wav'
+# path to a stored generated spectrogram (generated using generate_samples.py???)
 spec_gen_path = working_dir + 'Achetadomesticus_XC751737-dat001-058_cut_0-1_interpolation0.42-Achetadomesticus_XC751737-dat001-058_cut_1.wav.wav.npy'
+# load the original audio, as well as the generated spectrogram
 y, sr = librosa.load(original_wave_path)
 spec_gen = np.load(spec_gen_path)
 
 plt.imshow(spec_gen)
 
 # original_spec = np.abs(librosa.stft(y))
+# generate a spectrogram from the original audio
 original_mel_spec = audio_to_melspectrogram(y, resize=False)
 plt.imshow(original_mel_spec)
 
+# reverse the process: generated spectrogram to audio wave
 gen_wave = mel_spectrogram_to_audio(spec_gen, resize=False)
 
+# plot for compariosn
 plt.plot(gen_wave)
 plt.plot(y)
 
-
+# save file for further processing
 sf.write(working_dir + 'generation_intepol.wav', gen_wave, 22050)
 
 
