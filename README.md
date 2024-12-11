@@ -1,20 +1,23 @@
 # ECOGEN: Bird Sounds Generation using Deep Learning
 
-This repository contains the code for the paper [ECOGEN: Bird Sounds Generation using Deep Learning](https://doi.org/10.1111/2041-210X.14239). 
+This repository contains a fork of the code for the paper [ECOGEN: Bird Sounds Generation using Deep Learning](https://doi.org/10.1111/2041-210X.14239). 
 The paper proposes a novel method for generating bird sounds using deep learning by leveraging VQ-VAE2 network architecture.
 The proposed method is able to generate bird sounds that aims to increase the dataset size for bird sound classification tasks.
 
-
+## Caveat:
+This branch is used for debugging. There is still (at least) one bug with multiprocessing and num_workers has to be set to 0 in src\configs\dataset\*.yaml (where * is the name of the dataset config file) for the code to run. This makes training extremely slow.
 
 ## Dataset
-The dataset used in this paper is the Xeno-Canto dataset from Kaggle. The dataset can be downloaded from [Part 1](https://www.kaggle.com/rohanrao/xeno-canto-bird-recordings-extended-a-m) and [Part 2](https://www.kaggle.com/rohanrao/xeno-canto-bird-recordings-extended-n-z).
+The dataset used in this paper is InsectSet66
 
 ## Model Checkpoint
-MOdel checkpoints can be found in the [OSF Link](https://doi.org/10.17605/OSF.IO/YQDJ9) folder.
+A trained model can be found in the folder trained_models.
+
 ## Requirements
-The code is tested on Python 3.7.7 and PyTorch 1.13.1. The required packages can be installed using the following command:
+The code is "tested" on Windows 10 on Python 3.8.20 and PyTorch 1.13.1. The required packages can be installed using the following command:
 ```
-git clone https://github.com/ixobert/birds-generation
+git clone https://github.com/Kunjar01/insects-generation
+git checkout VQVAE-Adapt-win
 cd ./birds-generation/
 #Use this line for M1 series Mac
 pip install -r mac-m1-requirements.txt
@@ -41,7 +44,7 @@ The code expects the dataset to be in the following format:
 ./birds-songs/dataset/train.txt|test.txt
 ```
 
-The train,test and validation text files contains the path to the audio files. See below an example of a train.txt file:
+The train, test and validation text files contains the path to the audio files. See below an example of a train.txt file:
 
 ```
 birds-song/1.wav
