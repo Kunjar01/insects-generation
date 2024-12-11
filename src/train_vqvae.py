@@ -216,7 +216,7 @@ class VQEngine(pl.LightningModule):
 
 
 # @hydra.main(config_path="configs", config_name="train_vqvae")
-@hydra.main(config_path="/home/sebastien/Documents/Advanced_Deep_Learning/Project/insects-generation/src/configs", config_name="train_vqvae")
+@hydra.main(config_path=r"C:\Users\jarom\Documents\ZHAW\S4\ADL\project\insects-gen\src\configs", config_name="train_vqvae_test")
 def main(cfg: DictConfig) -> None:
     # from omegaconf import OmegaConf
     # print(OmegaConf.to_yaml(cfg))
@@ -246,9 +246,9 @@ def main(cfg: DictConfig) -> None:
 
     trainer = pl.Trainer(
     logger=logger,
-    accelerator="gpu",  # Use "gpu" as the accelerator
-    devices="auto",
-    # devices=[0],        # Use device ID 0
+    accelerator="cpu",  # Use "gpu" as the accelerator
+    # devices="auto",
+    devices=1,        # Use device ID 1
     max_epochs=cfg.get('nb_epochs', 3),
     callbacks=[checkpoint_callback],
     )

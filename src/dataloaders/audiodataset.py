@@ -180,12 +180,15 @@ class AudioDataset():
 
         return 
 
-    def load_audio(self,file_path, sr, window_length=0):
+    def load_audio(self, file_path, sr, window_length=0):
         audio, _sr = librosa.load(file_path, sr=sr)
+        print(sr)
+        # this branch is useless since, libros will always return _sr = sr
         if _sr != self.sr:
             audio = librosa.resample(y=audio, orig_sr=_sr, target_sr=sr)
 
         if self.window_length and len(audio) >= self.window_length:
+            print("window_length", self.window_length)
             audio = audio[0:self.window_length]
         else:
             audio = librosa.util.fix_length(data=audio, size=self.window_length)
@@ -203,13 +206,14 @@ class AudioDataset():
                 if self.spec:
                     if self.use_spectrogram:
                         features = self.audio_to_melspectrogram(audio, resize=self.resize)
+                        print("FEATURES", features.shape)
                     else:
                         features = self.audio_to_specgram(audio, resize=self.resize)
                     # features = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1)).fit_transform(features)
                 else:
                     features = audio
             
-            features= np.expand_dims(features,0)
+            features = np.expand_dims(features,0)
             if 'udem' in file_path:
                 label_name = file_path.split('/')[-2]
             # elif 'nsynth' in file_path:

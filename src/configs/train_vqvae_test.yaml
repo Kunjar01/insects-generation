@@ -1,0 +1,30 @@
+defaults:
+  - dataset: insect66 
+  - _self_
+working_dir: 'C:/Users/jarom/Documents/ZHAW/S4/ADL/project/outputs'
+hydra:
+  run:
+    dir: ${working_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+git_hash: ''
+project_name: insect-audio-generation
+run_name: Test run Jaro
+tags: 
+  - 'debug'
+
+train_path:
+  - "D:/orthop/insect_sounds/data/InsectSetDownsampledSortedCut/train"
+val_path:
+  - "D:/orthop/insect_sounds/data/InsectSetDownsampledSortedCut/validation"
+test_path:
+  - "D:/orthop/insect_sounds/data/InsectSetDownsampledSortedCut/test"
+num_workers: 0
+nb_epochs: 2
+lr: 0.00002
+latent_loss_weight: 0.25
+net:
+  in_channel: 1
+log_frequency: 10
+
+pretrained_weights: ''
+mode: train #train | extract | train_extract By default: train
+debug: True

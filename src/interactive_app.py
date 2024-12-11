@@ -20,14 +20,14 @@ st.sidebar.title("Model Configuration")
 
 
 models = {
-    "null": "",
+    "insectset": r"C:\Users\jarom\Documents\ZHAW\S4\ADL\project\insects-gen\trained_models\epoch=355-step=9256.ckpt",
     # "taylor": "/home/future/Documents/runs_articfacts/birds-generation/outputs/2020-11-23/15-53-15/models-vqvae-v0.ckpt",
     # "british-birds": "/home/future/Documents/runs_articfacts/birds-generation/outputs/2021-02-13/10-04-49/models-vqvae.ckpt",
-    "xeno-canto": "../paper-materials/epoch=5-step=30005.ckpt"
+    # "xeno-canto": "../paper-materials/epoch=5-step=30005.ckpt"
 }
 print(models)
 model_path = st.sidebar.selectbox("Model File",
-    list(models.keys()), index=1)
+    list(models.keys()), index=0)
 
 
 sr = st.sidebar.selectbox('Sample Rate', [16384,22500,44100], index=0)
@@ -43,12 +43,7 @@ noise = st.sidebar.slider('Weight', min_value=0.0, max_value=10.0, value=0.5, st
 infile_path = st.text_input('Input file', '')
 all_input_files = [
     "",
-    "/Users/test/Documents/Projects/Master/udem-birds/classes/AMGP_1(tu-tit)/108-14023579_14053660.wav",
-    "/Users/test/Documents/Projects/Master/udem-birds/classes/WRSA_1(boingboingboing)/2-1380970_1481319.wav",
-    "/Users/test/Documents/Projects/Master/taylor-dataset/media/Taylor/N_/14.wav",
-    "/Users/test/Documents/Projects/Master/taylor-dataset/media/Taylor/NE_/1.-1.wav",
-    "/Users/test/Documents/Projects/Master/taylor-dataset/media/Taylor/CaVi_/10.-10.wav",
-    "/Users/test/Documents/Projects/Master/taylor-dataset/media/Taylor/BHGB_/10.-10.wav",
+    r"C:\Users\jarom\Documents\ZHAW\S4\ADL\project\insects-gen\src\generated_samples\waves\test_original.wav",
 ]
 infile_path_select = st.selectbox('Input file', all_input_files, index=1)
 
@@ -67,17 +62,17 @@ def update_model_keys(old_model:OrderedDict, key_to_replace:str='module.'):
     return new_model
 
 @st.cache()
-def load_model(model, model_path, device='cuda:0'):
+def load_model(_model, model_path, device='cuda:0'):
     weights = torch.load(model_path, map_location='cpu')
     if 'model' in weights:
         weights = weights['model']
     if 'state_dict' in weights:
         weights = weights['state_dict']
     weights = update_model_keys(weights, key_to_replace='net.')
-    model.load_state_dict(weights)
-    model = model.eval()
-    model = model.to(device)
-    return model
+    _model.load_state_dict(weights)
+    _model = _model.eval()
+    _model = _model.to(device)
+    return _model
 
 # @st.cache()
 def inference(model, img, noise=0.5, device='cuda:0'):
@@ -232,17 +227,17 @@ if model_path and infile_path:
             
         if st.checkbox("Show waveforms"):
             fig, axes = plt.subplots(2,1, figsize=(5,5))
-            librosa.display.waveplot(audio, sr=sr, ax=axes[0])
+            axes[0].plot(audio)
             axes[0].set(title='Input')
             axes[0].label_outer()
-            librosa.display.waveplot(reconstructed_audio, sr=sr, ax=axes[1])
+            axes[1].plot(reconstructed_audio)
             axes[1].set(title='Reconstructed')
             axes[1].label_outer()
             st.pyplot(fig)
         
     ## Interpolation
     st.title("Interpolation")
-    col1, col2 = st.beta_columns(2)
+    col1, col2 = st.columns(2)
     infile_path = col1.selectbox('A', all_input_files, index=1)
     infile_path1 = col2.selectbox('B', all_input_files, index=1)
     

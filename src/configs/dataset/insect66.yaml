@@ -1,5 +1,5 @@
-num_workers: 6
-root_dir: '/home/sebastien/Documents/Advanced_Deep_Learning/Project/insects-generation/src'
+num_workers: 0
+root_dir: 'D:/orthop/insect_sounds'
 train_path: '${dataset.root_dir}/train.txt'
 val_path: '${dataset.root_dir}/validation.txt'
 test_path: '${dataset.root_dir}/test.txt'
@@ -77,6 +77,6 @@ classes_name:
 resize: false
 return_tuple: true
 return_tuple_of3: true
-sr: 22500
+sr: 22050
 use_mel: true
 use_cache: false

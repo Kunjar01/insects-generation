@@ -189,6 +189,7 @@ class VQVAE(nn.Module):
         )
 
     def forward(self, input, logits_only=False):
+        print(f"Shape of input: f{input.shape}")
         quant_t, quant_b, diff, _, _ = self.encode(input)
         dec = self.decode(quant_t, quant_b)
         # dec = torch.tanh(dec)
@@ -211,6 +212,133 @@ class VQVAE(nn.Module):
         # dec_t = dec_t[:, :, :, :min_width]
         print(f"Shape of dec_t: {dec_t.shape}")
         print(f"Shape of enc_b: {enc_b.shape}")
+        enc_b = torch.cat([dec_t, enc_b], 1)
+
+        quant_b = self.quantize_conv_b(enc_b).permute(0, 2, 3, 1)
+        quant_b, diff_b, id_b = self.quantize_b(quant_b)
+        quant_b = quant_b.permute(0, 3, 1, 2)
+        diff_b = diff_b.unsqueeze(0)
+
+        return quant_t, quant_b, diff_t + diff_b, id_t, id_b
+
+
+
+        # min_width = min(dec_t.shape[3], enc_b.shape[3])    # Truncation of dim to avoid error (produces new errors)
+        # enc_b = enc_b[:, :, :, :min_width]
+        # dec_t = dec_t[:, :, :, :min_width]
+        print(f"Shape of dec_t: {dec_t.shape}")
+        print(f"Shape of enc_b: {enc_b.shape}")
+
+        # this line errors out when we set the sample rate to 22050 instead of 22500
+        # because of a tensor size mismatch in dimension -1:
+        # Shape of dec_t: torch.Size([6, 64, 32, 42])
+        # Shape of enc_b: torch.Size([6, 128, 32, 43])
+        # thoughts: changing the sr (22500 --> 22050) changes the size of enc_b which then no longer matches dec_t
+
+        enc_b = torch.cat([dec_t, enc_b], 1)
+
+        quant_b = self.quantize_conv_b(enc_b).permute(0, 2, 3, 1)
+        quant_b, diff_b, id_b = self.quantize_b(quant_b)
+        quant_b = quant_b.permute(0, 3, 1, 2)
+        diff_b = diff_b.unsqueeze(0)
+
+        return quant_t, quant_b, diff_t + diff_b, id_t, id_b
+
+    def decode(self, quant_t, quant_b):
+        upsample_t = self.upsample_t(quant_t)
+        quant = torch.cat([upsample_t, quant_b], 1)
+        dec = self.dec(quant)
+
+        return dec
+
+    def decode_code(self, code_t, code_b):
+        quant_t = self.quantize_t.embed_code(code_t)
+        quant_t = quant_t.permute(0, 3, 1, 2)
+        quant_b = self.quantize_b.embed_code(code_b)
+        quant_b = quant_b.permute(0, 3, 1, 2)
+
+        dec = self.decode(quant_t, quant_b)
+
+        return dec
+
+class VQVAE_enc(nn.Module):
+    def __init__(
+        self,
+        in_channel=3,
+        channel=128,
+        n_res_block=2,
+        n_res_channel=32,
+        embed_dim=64,
+        n_embed=512,
+        decay=0.99,
+    ):
+        super().__init__()
+        self.n_embed = n_embed
+        self.enc_b = Encoder(in_channel, channel, n_res_block, n_res_channel, stride=4)
+        self.enc_t = Encoder(channel, channel, n_res_block, n_res_channel, stride=2)
+        self.quantize_conv_t = nn.Conv2d(channel, embed_dim, 1)
+        self.quantize_t = Quantize(embed_dim, n_embed)
+        self.dec_t = Decoder(
+            embed_dim, embed_dim, channel, n_res_block, n_res_channel, stride=2
+        )
+        self.quantize_conv_b = nn.Conv2d(embed_dim + channel, embed_dim, 1)
+        self.quantize_b = Quantize(embed_dim, n_embed)
+        self.upsample_t = nn.ConvTranspose2d(
+            embed_dim, embed_dim, 4, stride=2, padding=1
+        )
+        self.dec = Decoder(
+            embed_dim + embed_dim,
+            in_channel,
+            channel,
+            n_res_block,
+            n_res_channel,
+            stride=4,
+        )
+
+    def forward(self, input, logits_only=False):
+        print(f"Shape of input: f{input.shape}")
+        quant_t, quant_b, diff, _, _ = self.encode(input)
+        dec = None
+        # dec = self.decode(quant_t, quant_b)
+        # dec = torch.tanh(dec)
+        if logits_only:
+            return dec
+        return dec, diff
+
+    def encode(self, input):
+        # Pass input through encoders input --> enc_b --> enc_t 
+        enc_b = self.enc_b(input)
+        enc_t = self.enc_t(enc_b)
+
+        # Pass enc_t through Quantize module
+        # orig: quant_t = self.quantize_conv_t(enc_t).permute(0, 2, 3, 1)
+        # debug
+        quant_t = self.quantize_conv_t(enc_t.unsqueeze(0)).permute(0, 2, 3, 1)
+        # end debug
+        quant_t, diff_t, id_t = self.quantize_t(quant_t)
+        # orig: quant_t = quant_t.permute(0, 3, 1, 2)
+        # debug:
+        quant_t = quant_t.permute(3, 1, 2)
+        # end debug
+        diff_t = diff_t.unsqueeze(0)
+
+        # pass quantized dec_t through the decoder
+        dec_t = self.dec_t(quant_t)
+
+
+
+        # min_width = min(dec_t.shape[3], enc_b.shape[3])    # Truncation of dim to avoid error (produces new errors)
+        # enc_b = enc_b[:, :, :, :min_width]
+        # dec_t = dec_t[:, :, :, :min_width]
+        print(f"Shape of dec_t: {dec_t.shape}")
+        print(f"Shape of enc_b: {enc_b.shape}")
+
+        # this line errors out when we set the sample rate to 22050 instead of 22500
+        # because of a tensor size mismatch in dimension -1:
+        # Shape of dec_t: torch.Size([6, 64, 32, 42])
+        # Shape of enc_b: torch.Size([6, 128, 32, 43])
+        # thoughts: changing the sr (22500 --> 22050) changes the size of enc_b which then no longer matches dec_t
+
         enc_b = torch.cat([dec_t, enc_b], 1)
 
         quant_b = self.quantize_conv_b(enc_b).permute(0, 2, 3, 1)
