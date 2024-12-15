@@ -9,7 +9,16 @@ In this repo, the code was adapted to do the same for insect sounds.
 The dataset used in this project is [InsectSet66](https://zenodo.org/records/8252141) (Faiß, M. 2023)
 
 ## Model Checkpoint
-A trained model can be found in the folder trained_models.
+A trained model can be found in the folder trained_models. The model was trained after adapting the model to our needs and fixing most of the bugs. The final bugs, which resampled our original data to 22500 Hz was fixed after training, which means the model was trained with slightly different parameters as described in this repository. Since this last bug had no major impact on the performance of the model, we decided not to retrain.
+The conda environment used for training is stored under training_environment.yml and can be installed with the following command:
+```
+conda env create -f training_environment.yml
+```
+Training configuration can be found in the /src/training_configs directory.
+Training was executed with the following command:
+```
+python ./train_vqvae.py dataset=insect66 mode=train lr=0.00002 nb_epochs=360 log_frequency=1 dataset.batch_size=420 dataset.num_workers=8 run_name=test_run tags=[vq-vae2,insect66] debug=false
+```
 
 ## Requirements
 The code is tested on Python 3.7.7 and PyTorch 1.13.1. The required packages can be installed using the following command:
